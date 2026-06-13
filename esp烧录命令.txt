@@ -1,0 +1,10 @@
+E:\ESP32\.espressif\frameworks\esp-idf-v5.5.1\export.ps1
+cd C:\Users\CYL\Desktop\EyeTrackVR_OpenIris-ESPIDF
+# 1. 先清除旧的 build（因为之前 set-target 已经设置过了）
+idf.py fullclean
+# 2. 重新切换 board 配置（重新写入 sdkconfig）
+python .\tools\switchBoardType.py --board goouuu_esp32s3_cam
+# 3. 直接 build，不要再 set-target（sdkconfig 中已经包含了 target 信息）
+idf.py build
+4.烧录到开发板
+idf.py -p COM3 flash
