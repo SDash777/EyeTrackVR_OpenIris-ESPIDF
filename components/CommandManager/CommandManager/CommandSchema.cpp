@@ -10,15 +10,16 @@ void to_json(nlohmann::json& j, const WifiPayload& payload)
 
 void from_json(const nlohmann::json& j, WifiPayload& payload)
 {
-    payload.name = j.at("name").get<std::string>();
-    payload.ssid = j.at("ssid").get<std::string>();
-    payload.password = j.at("password").get<std::string>();
-    payload.channel = j.at("channel").get<uint8_t>();
-    payload.power = j.at("power").get<uint8_t>();
+    if (!j.is_object()) return;
+    payload.name = j.value("name", std::string("main"));
+    payload.ssid = j.value("ssid", std::string(""));
+    payload.password = j.value("password", std::string(""));
+    payload.channel = j.contains("channel") && j["channel"].is_number() ? j["channel"].get<uint8_t>() : 0;
+    payload.power = j.contains("power") && j["power"].is_number() ? j["power"].get<uint8_t>() : 0;
 
-    if (j.contains("bssid"))
+    if (j.contains("bssid") && j["bssid"].is_string())
     {
-        payload.bssid = j.at("bssid").get<std::string>();
+        payload.bssid = j["bssid"].get<std::string>();
     }
 }
 
@@ -32,30 +33,31 @@ void to_json(nlohmann::json& j, const UpdateWifiPayload& payload)
 
 void from_json(const nlohmann::json& j, UpdateWifiPayload& payload)
 {
-    payload.name = j.at("name").get<std::string>();
-    if (j.contains("ssid"))
+    if (!j.is_object()) return;
+    payload.name = j.value("name", std::string("main"));
+    if (j.contains("ssid") && j["ssid"].is_string())
     {
-        payload.ssid = j.at("ssid").get<std::string>();
+        payload.ssid = j["ssid"].get<std::string>();
     }
 
-    if (j.contains("bssid"))
+    if (j.contains("bssid") && j["bssid"].is_string())
     {
-        payload.bssid = j.at("bssid").get<std::string>();
+        payload.bssid = j["bssid"].get<std::string>();
     }
 
-    if (j.contains("password"))
+    if (j.contains("password") && j["password"].is_string())
     {
-        payload.password = j.at("password").get<std::string>();
+        payload.password = j["password"].get<std::string>();
     }
 
-    if (j.contains("channel"))
+    if (j.contains("channel") && j["channel"].is_number())
     {
-        payload.channel = j.at("channel").get<uint8_t>();
+        payload.channel = j["channel"].get<uint8_t>();
     }
 
-    if (j.contains("power"))
+    if (j.contains("power") && j["power"].is_number())
     {
-        payload.power = j.at("power").get<uint8_t>();
+        payload.power = j["power"].get<uint8_t>();
     }
 }
 

@@ -1,5 +1,6 @@
 #include "CommandManager.hpp"
 #include <cstdlib>
+#include "esp_log.h"
 
 std::unordered_map<std::string, CommandType> commandTypeMap = {
     {"ping", CommandType::PING},
@@ -135,7 +136,17 @@ CommandManagerResponse CommandManager::executeFromJson(const std::string_view js
 
 CommandManagerResponse CommandManager::executeFromType(const CommandType type, const std::string_view json) const
 {
-    const auto command = createCommand(type, json);
+    nlohmann::json parsed;
+    if (!json.empty() && nlohmann::json::accept(json))
+    {
+        parsed = nlohmann::json::parse(json, nullptr, false);
+        if (parsed.is_discarded())
+        {
+            parsed = nlohmann::json::object();
+        }
+    }
+
+    const auto command = createCommand(type, parsed);
 
     if (command == nullptr)
     {

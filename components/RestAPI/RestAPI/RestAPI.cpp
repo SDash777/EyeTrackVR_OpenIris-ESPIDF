@@ -9,15 +9,18 @@
 
 bool getIsSuccess(const nlohmann::json& response)
 {
-    // since the commandManager will be returning CommandManagerResponse to simplify parsing on the clients end
-    // we can slightly its json representation, and extract the status from there
-    // note: This will only work for commands executed with CommandManager::executeFromType().
-    if (!response.contains("result"))
+    if (!response.is_object() || !response.contains("result"))
     {
         return false;
     }
 
-    return response.at("result").at("status").get<std::string>() == "success";
+    const auto& result = response["result"];
+    if (!result.is_object() || !result.contains("status"))
+    {
+        return false;
+    }
+
+    return result["status"].is_string() && result["status"].get<std::string>() == "success";
 }
 
 RestAPI::RestAPI(std::string url, std::shared_ptr<CommandManager> commandManager) : command_manager(commandManager)
@@ -133,10 +136,12 @@ void RestAPI::handle_endpoint_command(RequestContext* context, std::string allow
     if (context->method != allowed_method)
     {
         mg_http_reply(context->connection, 401, JSON_RESPONSE, "{%m:%m}", MG_ESC("error"), "Method not allowed");
+        delete context;
         return;
     }
 
     const nlohmann::json result = command_manager->executeFromType(command_type, context->body);
     const auto code = getIsSuccess(result) ? success_code : error_code;
     mg_http_reply(context->connection, code, JSON_RESPONSE, result.dump().c_str());
+    delete context;
 }

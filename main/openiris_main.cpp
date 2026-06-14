@@ -215,12 +215,11 @@ void startWiFiMode()
     mdnsManager.start();
     restAPI->begin();
     StreamingMode mode = deviceConfig->getDeviceMode();
-    // don't enable in SETUP mode
-    if (mode == StreamingMode::WIFI)
+    if (mode == StreamingMode::WIFI || mode == StreamingMode::SETUP)
     {
         streamServer.startStreamServer();
     }
-    xTaskCreate(HandleRestAPIPollTask, "HandleRestAPIPollTask", 2024 * 2, restAPI.get(),
+    xTaskCreate(HandleRestAPIPollTask, "HandleRestAPIPollTask", 1024 * 8, restAPI.get(),
                 1,  // it's the rest API, we only serve commands over it so we don't really need a higher priority
                 nullptr);
 #else

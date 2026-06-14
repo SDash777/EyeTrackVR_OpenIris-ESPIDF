@@ -1,0 +1,35 @@
+========================================
+  EyeTrackVR WiFi 配置说明
+========================================
+
+方法一（推荐）：通过串口配置（无需重新编译固件）
+  用 TTL USB 口连接设备后，执行：
+
+  python configure_wifi_serial.py --port COM3 --ssid 你的WiFi名称 --password 你的WiFi密码
+
+  注意：
+  - COM3 替换为你设备实际的串口号
+  - 运行前请关闭其他占用该串口的程序（如串口监视器）
+  - 需要 pyserial 库（pip install pyserial）
+
+方法二：通过 bat 脚本配置（需先重新编译烧录固件修复 REST API bug）
+  1. 重新编译烧录固件（idf.py build && idf.py -p COM3 flash）
+  2. 电脑连接 EyeTrackVR 热点（密码 12345678）
+  3. 双击 configure_wifi.bat，按提示输入 WiFi 名称和密码
+
+方法三：手动在 CMD（不是 PowerShell）中通过 REST API 配置
+  需先重新编译烧录固件，然后电脑连接 EyeTrackVR 热点后执行：
+
+  curl.exe -X POST "http://192.168.4.1:81/api/set/wifi/" -H "Content-Type: application/json" -d "{\"ssid\":\"你的WiFi名称\",\"password\":\"你的WiFi密码\"}"
+  curl.exe -X PATCH "http://192.168.4.1:81/api/update/device/mode/" -H "Content-Type: application/json" -d "{\"mode\":\"wifi\"}"
+  curl.exe -X POST "http://192.168.4.1:81/api/set/config/save/"
+  curl.exe "http://192.168.4.1:81/api/reboot/device/"
+
+========================================
+  重要提示
+========================================
+- 方法一可直接使用，不需要重新编译固件（串口通道的 JSON 解析没有 bug）
+- 方法二和方法三需要先重新编译烧录（REST API 有 JSON 解析 bug 已在代码中修复）
+- 不要在 PowerShell 中使用 curl 命令，PowerShell 会破坏 JSON 格式
+- 设备连不上 WiFi 时会自动回退到热点模式（EyeTrackVR / 12345678）
+- 连接家庭 WiFi 后，在路由器后台查找设备 IP 或尝试 openiristracker.local
